@@ -1,21 +1,36 @@
+// frontend/src/index.js
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './App.css';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+// Define your custom theme.
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#1976d2', // Customize your primary color
+      main: '#ffffff', // white text for primary elements
     },
     secondary: {
-      main: '#dc004e', // Customize your secondary color
+      main: '#FF6600', // HCA orange accent
+    },
+    background: {
+      default: '#003366', // HCA blue background
+      paper: '#003366',   // use the same for paper if desired
+    },
+    text: {
+      primary: '#ffffff',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Helvetica Neue", Arial, sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+    h5: {
+      fontWeight: 600,
+    },
   },
 });
 
@@ -23,9 +38,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <CssBaseline />
       <App />
     </ThemeProvider>
   </React.StrictMode>
 );
-

@@ -26,6 +26,9 @@ class Command(BaseCommand):
                     zip_code=row.get('facility_zip'),
                     latitude=row.get('latitude') or None,
                     longitude=row.get('longitude') or None,
+                    is_medical=row.get('PositionCategory'),
+                    email=row.get('EmpEmail'),
+
                 )
                 self.stdout.write(self.style.SUCCESS(
                     f"Imported {row.get('first_name')} {row.get('last_name')}"

@@ -11,6 +11,8 @@ class Person(models.Model):
     zip_code   = models.CharField(max_length=5)
     latitude   = models.CharField(max_length=100, null=True, blank=True)
     longitude  = models.CharField(max_length=100, null=True, blank=True)
+    is_medical = models.CharField(max_length=100, null=True, blank=True)
+    email      = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

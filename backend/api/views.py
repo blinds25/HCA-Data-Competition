@@ -44,9 +44,11 @@ def get_data(request):
     else:
         center_lat, center_lon = 37.773972, -122.431297
 
-    # Compute nearby people (those not in the local zip code and within the radius)
+    # Compute nearby people: those not in the local zip code, within the radius,
+    # and where is_medical is "Medical".
     nearby_list = []
-    others = Person.objects.exclude(zip_code=zip_code)
+    # Filter others for is_medical == "Medical"
+    others = Person.objects.exclude(zip_code=zip_code).filter(is_medical="Medical")
     for person in others:
         try:
             person_lat = float(person.latitude)
@@ -64,7 +66,6 @@ def get_data(request):
         "local": local_serializer.data,
         "nearby": nearby_serializer.data
     })
-
 
 @api_view(['POST'])
 def send_email_view(request):

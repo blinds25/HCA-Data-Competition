@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
-  Container, Typography, Box, Slider, Tabs, Tab, Button 
+  Container, Typography, Box, Slider, Tabs, Tab, Button, CircularProgress 
 } from '@mui/material';
 import MapComponent from './MapComponent';
 import PeopleList from './PeopleList';
 import EmailModal from './EmailModal';
+import HomeButton from './HomeButton';
+import useDebounce from '../hooks/useDebounce';
 
 // TabPanel helper component for rendering tab content
 function TabPanel(props) {
@@ -20,11 +22,7 @@ function TabPanel(props) {
       aria-labelledby={`dashboard-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ p: 2 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
     </div>
   );
 }
@@ -36,51 +34,72 @@ function DataDashboard() {
 
   const [localData, setLocalData] = useState([]);
   const [nearbyData, setNearbyData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Map center state; if localData exists, use its first record's coordinates.
+  const [mapCenter, setMapCenter] = useState({ lat: 39.8283, lon: -98.5795 });
+  // Map zoom state; default zoom is 4 for a U.S. view.
+  const [mapZoom, setMapZoom] = useState(4);
 
   // Slider state for radius; default is 50 miles.
   const [radius, setRadius] = useState(50);
+  // Use debounce on the radius (500ms delay)
+  const debouncedRadius = useDebounce(radius, 500);
 
-  // Tab state: 0 for Local, 1 for Nearby.
+  // Tab state: 0 for Affected Facility, 1 for Nearby Facilities.
   const [tabValue, setTabValue] = useState(0);
 
   // State for email modal.
   const [selectedEmailData, setSelectedEmailData] = useState(null);
 
-  // Handler for slider change (for Nearby tab).
   const handleRadiusChange = (event, newValue) => {
     setRadius(newValue);
   };
 
-  // Handler for tab change.
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // Fetch data whenever zipCode or radius changes.
+  // Fetch data whenever zipCode or the debounced radius changes.
   useEffect(() => {
     if (zipCode) {
-      fetch(`http://localhost:8000/api/data/?zip_code=${zipCode}&radius=${radius}`)
+      setLoading(true);
+      fetch(`http://localhost:8000/api/data/?zip_code=${zipCode}&radius=${debouncedRadius}`)
         .then((res) => res.json())
         .then((data) => {
           console.log("API response:", data);
           setLocalData(data.local);
           setNearbyData(data.nearby);
+          setLoading(false);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error(err);
+          setLoading(false);
+        });
     }
-  }, [zipCode, radius]);
+  }, [zipCode, debouncedRadius]);
 
-  // This helper extracts emails from an array of person objects.
-  const getEmailsFromGroup = (group) => {
-    // Assuming each person object has an 'email' field.
-    return group.map(person => person.email).filter(email => email);
-  };
+  // When localData updates, set the map center using the first local record.
+  useEffect(() => {
+    if (localData.length > 0) {
+      const lat = parseFloat(localData[0].latitude);
+      const lon = parseFloat(localData[0].longitude);
+      if (!isNaN(lat) && !isNaN(lon)) {
+        setMapCenter({ lat, lon });
+        setMapZoom(8); // Closer view when local data is available.
+      }
+    } else {
+      setMapCenter({ lat: 39.8283, lon: -98.5795 });
+      setMapZoom(4);
+    }
+  }, [localData]);
 
-  // Updated onContact callback that now accepts a recipient or recipients.
-  const openEmailModal = (recipients, subjectType) => {
-    const subject = subjectType === 'A' ? 'Subject for Group A' : 'Subject for Group B';
-    // 'recipients' can be a single email or an array of emails.
-    setSelectedEmailData({ recipients, subject });
+  // For the "Contact All" buttons, pass the count of facilities.
+  const openEmailModal = (recipientsCount, subjectType) => {
+    const subject = subjectType === 'A'
+      ? "Mandated Evacuation Protocol and Instructions"
+      : "Emergency Assistance Requested";
+    setSelectedEmailData({ recipients: recipientsCount, subject });
   };
 
   const closeEmailModal = () => {
@@ -88,46 +107,78 @@ function DataDashboard() {
   };
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Data Dashboard for Zip: {zipCode}
-      </Typography>
+    <Container 
+      maxWidth="xl" 
+      sx={{ backgroundColor: '#003366', minHeight: '100vh', width: '100%', pt: 4, pb: 4, position: 'relative' }}
+    >
+      <HomeButton />
+      {/* Header */}
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Typography variant="h3" sx={{ color: '#ffffff', fontWeight: 600 }}>
+          HCA Emergency Contact System
+        </Typography>
+        <Typography variant="h5" sx={{ color: '#ffffff' }}>
+          Showing results for zipcode: {zipCode}
+        </Typography>
+      </Box>
+
+      {/* "Discover" subheader above the map */}
+      <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Typography variant="h5" sx={{ color: '#f8f8f8' }}>
+          Discover
+        </Typography>
+      </Box>
 
       {/* Map view */}
       <Box sx={{ my: 4 }}>
-        <MapComponent data={[...localData, ...nearbyData]} />
+        <MapComponent 
+          data={[...localData, ...nearbyData]} 
+          zipCode={zipCode} 
+          center={mapCenter} 
+          zoom={mapZoom}
+        />
       </Box>
 
-      {/* Tabs for switching between Local and Nearby */}
-      <Tabs
-        value={tabValue}
-        onChange={handleTabChange}
-        aria-label="People list tabs"
-        centered
-      >
-        <Tab label="Local" id="dashboard-tab-0" aria-controls="dashboard-tabpanel-0" />
-        <Tab label="Nearby" id="dashboard-tab-1" aria-controls="dashboard-tabpanel-1" />
-      </Tabs>
+      {/* "Contact" subheader above the lists */}
+      <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Typography variant="h5" sx={{ color: '#f8f8f8' }}>
+          Contact
+        </Typography>
+      </Box>
 
-      {/* Local Tab Panel */}
+      {/* Tabs for switching between lists */}
+      <Box sx={{ bgcolor: '#003366', borderRadius: 1, mb: 2 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="Facility list tabs"
+          centered
+          textColor="inherit"
+          indicatorColor="secondary"
+        >
+          <Tab label="Affected Facility" id="dashboard-tab-0" aria-controls="dashboard-tabpanel-0" sx={{ color: '#FF6600' }}/>
+          <Tab label="Nearby Facilities" id="dashboard-tab-1" aria-controls="dashboard-tabpanel-1" sx={{ color: '#FF6600' }}/>
+        </Tabs>
+      </Box>
+
+      {/* Affected Facility Tab Panel */}
       <TabPanel value={tabValue} index={0}>
-        <PeopleList people={localData} onContact={(recipient) => openEmailModal(recipient, 'A')} />
+        <PeopleList people={localData} />
         <Box sx={{ mt: 2, textAlign: 'right' }}>
           <Button 
             variant="contained" 
-            color="primary" 
-            onClick={() => openEmailModal(getEmailsFromGroup(localData), 'A')}
+            color="secondary" 
+            onClick={() => openEmailModal(localData.length, 'A')}
           >
-            Contact All Local
+            Contact Affected Facility
           </Button>
         </Box>
       </TabPanel>
 
-      {/* Nearby Tab Panel with Slider */}
+      {/* Nearby Facilities Tab Panel with Slider */}
       <TabPanel value={tabValue} index={1}>
-        {/* Slider appears only for the Nearby tab */}
         <Box sx={{ mb: 2 }}>
-          <Typography gutterBottom>
+          <Typography gutterBottom sx={{ color: '#FF6600' }}>
             Select Nearby Radius (miles): {radius}
           </Typography>
           <Slider
@@ -137,19 +188,44 @@ function DataDashboard() {
             valueLabelDisplay="auto"
             min={0}
             max={100}
+            sx={{ color: '#FF6600' }}
           />
         </Box>
-        <PeopleList people={nearbyData} onContact={(recipient) => openEmailModal(recipient, 'B')} />
+        <PeopleList people={nearbyData} />
         <Box sx={{ mt: 2, textAlign: 'right' }}>
           <Button 
             variant="contained" 
-            color="primary" 
-            onClick={() => openEmailModal(getEmailsFromGroup(nearbyData), 'B')}
+            color="secondary" 
+            onClick={() => openEmailModal(nearbyData.length, 'B')}
           >
-            Contact All Nearby
+            Contact All Nearby Facilities
           </Button>
         </Box>
       </TabPanel>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 51, 102, 0.7)', // semi-transparent dark blue overlay
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2,
+          }}
+        >
+          <CircularProgress sx={{ color: '#FF6600', mb: 2 }} />
+          <Typography variant="h6" sx={{ color: '#ffffff' }}>
+            Loading...
+          </Typography>
+        </Box>
+      )}
 
       {selectedEmailData && (
         <EmailModal emailData={selectedEmailData} onClose={closeEmailModal} />
