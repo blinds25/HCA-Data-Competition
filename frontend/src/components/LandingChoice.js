@@ -2,7 +2,15 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Box, Typography, Grid, Paper, Button } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Button,
+  Fade,
+} from "@mui/material";
 
 // LogoBackground component: displays fixed-position logos throughout the background.
 function LogoBackground() {
@@ -43,14 +51,14 @@ function LogoBackground() {
       {positions.map((pos, index) => (
         <img
           key={index}
-          src="/images/hca_logo.png" // Ensure your logo is at public/images/hca_logo.png
+          src="/images/hca_logo.png"
           alt="HCA Logo"
           style={{
             position: "absolute",
             top: pos.top,
             left: pos.left,
-            width: "120px", // Adjust size as needed
-            opacity: 0.5, // Adjust opacity as desired
+            width: "120px",
+            opacity: 0.3, // Reduced opacity for better contrast with content
             transform: "translate(-50%, -50%)",
             zIndex: 0,
           }}
@@ -62,14 +70,15 @@ function LogoBackground() {
 
 function LandingChoice() {
   const navigate = useNavigate();
+  const [showOptions, setShowOptions] = React.useState(false);
 
   const handleActClick = () => {
     navigate("/zipcode-entry");
   };
 
   const handlePrepareClick = () => {
-    // Show dashboard options
-    document.getElementById("dashboardOptions").style.display = "block";
+    // Show dashboard options with animation
+    setShowOptions(true);
   };
 
   const handlePowerBIDashboardClick = () => {
@@ -84,13 +93,14 @@ function LandingChoice() {
     <Container
       maxWidth="xl"
       sx={{
-        width: "100%", // Full width
+        width: "100%",
         height: "100vh",
-        backgroundColor: "#003366", // Dark blue background for entire page
+        backgroundColor: "#121f36", // Darker blue background for better contrast
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         position: "relative",
+        overflow: "hidden", // Prevent logo overflow
       }}
     >
       {/* Render the fixed background logos */}
@@ -99,48 +109,70 @@ function LandingChoice() {
       {/* Centered main box */}
       <Box
         sx={{
-          width: { xs: "90%", sm: "600px" },
-          backgroundColor: "#f8f8f8", // Off-white background for entry box
-          border: "2px solid #FF6600", // Orange outline
-          borderRadius: 2,
-          p: 4,
+          width: { xs: "95%", sm: "650px" },
+          backgroundColor: "#1a2942", // Darker panel background for better contrast
+          borderRadius: 3,
+          p: 5,
           textAlign: "center",
-          position: "relative", // Above background logos
+          position: "relative",
           zIndex: 1,
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)", // Enhanced shadow for depth
         }}
       >
         <Typography
-          variant="h4"
+          variant="h3"
           gutterBottom
-          sx={{ color: "#003366", fontWeight: 600, mb: 3 }}
+          sx={{
+            color: "#ffffff",
+            fontWeight: 700,
+            mb: 4,
+            textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)", // Text shadow for better visibility
+          }}
         >
-          HCA Emergency Response Resource
+          HCA Emergency Response
         </Typography>
-        <Grid container spacing={2} justifyContent="center">
+
+        <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} sm={6}>
             <Paper
               onClick={handlePrepareClick}
               sx={{
-                height: 200,
+                height: 220,
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "#FF6600", // Orange background
-                border: "2px solid #FF6600",
+                backgroundColor: "#FF6600",
+                borderRadius: 2,
                 cursor: "pointer",
-                opacity: 0.9,
-                transition: "transform 0.3s ease",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 20px rgba(255, 102, 0, 0.3)",
                 "&:hover": {
-                  transform: "scale(1.05)",
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 10px 25px rgba(255, 102, 0, 0.4)",
                 },
               }}
-              elevation={3}
+              elevation={6}
             >
               <Typography
-                variant="h5"
-                sx={{ color: "#ffffff", fontWeight: 600 }}
+                variant="h4"
+                sx={{
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  textShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
+                }}
               >
                 Prepare
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#ffffff",
+                  mt: 1,
+                  opacity: 0.9,
+                }}
+              >
+                View analytics and plan ahead
               </Typography>
             </Paper>
           </Grid>
@@ -148,91 +180,130 @@ function LandingChoice() {
             <Paper
               onClick={handleActClick}
               sx={{
-                height: 200,
+                height: 220,
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "#FF6600", // Orange background
-                border: "2px solid #FF6600",
+                backgroundColor: "#FF6600",
+                borderRadius: 2,
                 cursor: "pointer",
-                opacity: 0.9,
-                transition: "transform 0.3s ease",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 20px rgba(255, 102, 0, 0.3)",
                 "&:hover": {
-                  transform: "scale(1.05)",
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 10px 25px rgba(255, 102, 0, 0.4)",
                 },
               }}
-              elevation={3}
+              elevation={6}
             >
               <Typography
-                variant="h5"
-                sx={{ color: "#ffffff", fontWeight: 600 }}
+                variant="h4"
+                sx={{
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  textShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
+                }}
               >
                 Act
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#ffffff",
+                  mt: 1,
+                  opacity: 0.9,
+                }}
+              >
+                Respond to emergency situations
               </Typography>
             </Paper>
           </Grid>
         </Grid>
 
         {/* Dashboard Options (Hidden by default) */}
-        <Box
-          id="dashboardOptions"
-          sx={{
-            mt: 3,
-            display: "none",
-            backgroundColor: "rgba(0, 51, 102, 0.05)",
-            p: 2,
-            borderRadius: 1,
-          }}
-        >
-          <Typography variant="h6" gutterBottom sx={{ color: "#003366" }}>
-            Select Dashboard Type
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Button
-                onClick={handlePowerBIDashboardClick}
-                variant="contained"
-                fullWidth
-                sx={{
-                  backgroundColor: "#003366",
-                  color: "#ffffff",
-                  p: 2,
-                  "&:hover": {
-                    backgroundColor: "#004080",
-                  },
-                }}
-              >
-                PowerBI Dashboard
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                onClick={handleLocalDashboardClick}
-                variant="contained"
-                fullWidth
-                sx={{
-                  backgroundColor: "#003366",
-                  color: "#ffffff",
-                  p: 2,
-                  "&:hover": {
-                    backgroundColor: "#004080",
-                  },
-                }}
-              >
-                Interactive Dashboard{" "}
-                <span
-                  style={{
-                    fontSize: "0.8em",
-                    fontStyle: "italic",
-                    display: "block",
+        <Fade in={showOptions}>
+          <Box
+            sx={{
+              mt: 4,
+              backgroundColor: "rgba(26, 41, 66, 0.9)",
+              p: 3,
+              borderRadius: 2,
+              borderLeft: "4px solid #FF6600",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+            }}
+          >
+            <Typography
+              variant="h5"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 600, mb: 3 }}
+            >
+              Select Dashboard Type
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  onClick={handlePowerBIDashboardClick}
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#1f3154",
+                    color: "#ffffff",
+                    p: 2,
+                    borderRadius: 2,
+                    height: "100%",
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: "#2a4270",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 12px rgba(0, 0, 0, 0.3)",
+                    },
                   }}
                 >
-                  Using real facility data
-                </span>
-              </Button>
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      PowerBI Dashboard
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      Interactive data visualization
+                    </Typography>
+                  </Box>
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  onClick={handleLocalDashboardClick}
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#1f3154",
+                    color: "#ffffff",
+                    p: 2,
+                    borderRadius: 2,
+                    height: "100%",
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: "#2a4270",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 12px rgba(0, 0, 0, 0.3)",
+                    },
+                  }}
+                >
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      Interactive Dashboard
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      Using real facility data
+                    </Typography>
+                  </Box>
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
+          </Box>
+        </Fade>
       </Box>
     </Container>
   );

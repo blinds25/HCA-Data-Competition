@@ -1,77 +1,131 @@
 // frontend/src/components/MapComponent.js
 
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-// Custom icons
-const redIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+// Fix for the Leaflet icon issue in React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+});
+
+// Custom marker icons for different types of facilities
+const localFacilityIcon = new L.Icon({
+  iconUrl:
+    "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
   shadowSize: [41, 41],
 });
 
-const blueIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+const nearbyFacilityIcon = new L.Icon({
+  iconUrl:
+    "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
   shadowSize: [41, 41],
 });
 
-// Helper component to update map view on center/zoom change.
+// ChangeView component to update map view when center/zoom props change
 function ChangeView({ center, zoom }) {
   const map = useMap();
-  map.setView(center, zoom);
+  useEffect(() => {
+    map.setView(center, zoom);
+  }, [center, zoom, map]);
   return null;
 }
 
 function MapComponent({ data, zipCode, center, zoom }) {
-  const mapCenter = center ? [center.lat, center.lon] : [39.8283, -98.5795];
-  const mapZoom = zoom || 4;
+  // If no data, show empty map centered on US
+  if (!data || data.length === 0) {
+    return (
+      <MapContainer
+        center={[center.lat, center.lon]}
+        zoom={zoom}
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      </MapContainer>
+    );
+  }
 
-  // Marker for entered zip code.
-  const enteredZipMarker = (
-    <Marker position={mapCenter} icon={redIcon}>
-      <Popup>Entered Zip Code: {zipCode}</Popup>
-    </Marker>
-  );
-
-  // Build unique markers for each nearby zip.
-  const uniqueNearby = {};
-  data.forEach(person => {
-    if (person.zip_code !== zipCode && person.latitude && person.longitude) {
-      if (!uniqueNearby[person.zip_code]) {
-        uniqueNearby[person.zip_code] = {
-          lat: parseFloat(person.latitude),
-          lon: parseFloat(person.longitude),
-        };
-      }
-    }
-  });
-
-  const uniqueMarkers = Object.entries(uniqueNearby).map(([zip, coords]) => (
-    <Marker key={zip} position={[coords.lat, coords.lon]} icon={blueIcon}>
-      <Popup>Nearby Zip: {zip}</Popup>
-    </Marker>
-  ));
+  // Separate local and nearby facilities
+  const localData = data.filter((facility) => facility.zip_code === zipCode);
+  const nearbyData = data.filter((facility) => facility.zip_code !== zipCode);
 
   return (
-    <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '400px', width: '100%' }}>
-      <ChangeView center={mapCenter} zoom={mapZoom} />
+    <MapContainer
+      center={[center.lat, center.lon]}
+      zoom={zoom}
+      style={{ height: "100%", width: "100%" }}
+    >
+      {/* Use ChangeView to update map when center/zoom props change */}
+      <ChangeView center={[center.lat, center.lon]} zoom={zoom} />
+
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {enteredZipMarker}
-      {uniqueMarkers}
+
+      {/* Map markers for local facilities with red icon */}
+      {localData.map((facility, index) => (
+        <Marker
+          key={`local-${index}`}
+          position={[
+            parseFloat(facility.latitude) || center.lat,
+            parseFloat(facility.longitude) || center.lon,
+          ]}
+          icon={localFacilityIcon}
+        >
+          <Popup>
+            <div>
+              <b>{facility.location || "Local Facility"}</b>
+              <br />
+              {facility.city}, {facility.state} {facility.zip_code}
+              <br />
+              <span style={{ color: "#FF6600", fontWeight: "bold" }}>
+                Primary Facility (Entered ZIP Code)
+              </span>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* Map markers for nearby facilities with blue icon */}
+      {nearbyData.map((facility, index) => (
+        <Marker
+          key={`nearby-${index}`}
+          position={[
+            parseFloat(facility.latitude) || center.lat,
+            parseFloat(facility.longitude) || center.lon,
+          ]}
+          icon={nearbyFacilityIcon}
+        >
+          <Popup>
+            <div>
+              <b>{facility.location || "Nearby Facility"}</b>
+              <br />
+              {facility.city}, {facility.state} {facility.zip_code}
+              <br />
+              <span style={{ color: "#2196f3" }}>Nearby Facility</span>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 }
