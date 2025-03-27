@@ -35,6 +35,7 @@ import {
   Checkbox,
   ListItemButton,
   TablePagination,
+  LinearProgress,
 } from "@mui/material";
 import HomeButton from "./HomeButton";
 import {
@@ -949,296 +950,778 @@ function LocalDashboard() {
     setPage(0); // Reset pagination when filters change
   };
 
-  // Render the statistics card section
+  // Render statistics cards with improved spacing
   const renderStatisticsCards = () => (
-    <Grid container spacing={3}>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-          <CardContent sx={{ textAlign: "center" }}>
-            <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
-              Total Facilities
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ color: "#FF6600", fontWeight: "bold" }}
-            >
-              {facilityData.length > 0 ? facilityData.length : 130}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-              in high-risk areas
-            </Typography>
-          </CardContent>
-        </Card>
+    <Box sx={{ mb: 3, mt: 2 }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ height: "100%", p: 2, bgcolor: "#1a2a3a" }}>
+            <CardContent sx={{ pt: 2, pb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                TOTAL FACILITIES
+              </Typography>
+              <Typography variant="h3" sx={{ mb: 1, color: "#FF6600" }}>
+                {facilityData.length || 130}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#c0c0c0", pb: 1 }}>
+                Healthcare facilities nationwide
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ height: "100%", p: 2, bgcolor: "#1a2a3a" }}>
+            <CardContent sx={{ pt: 2, pb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                AVG READINESS SCORE
+              </Typography>
+              <Typography variant="h3" sx={{ mb: 1, color: "#FF6600" }}>
+                {facilityData.length > 0
+                  ? (
+                      facilityData.reduce(
+                        (sum, facility) => sum + facility.readinessScore,
+                        0
+                      ) / facilityData.length
+                    ).toFixed(1)
+                  : "76.2"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#c0c0c0", pb: 1 }}>
+                National preparedness average
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ height: "100%", p: 2, bgcolor: "#1a2a3a" }}>
+            <CardContent sx={{ pt: 2, pb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                TOTAL BED CAPACITY
+              </Typography>
+              <Typography variant="h3" sx={{ mb: 1, color: "#FF6600" }}>
+                {totalBeds > 0 ? totalBeds.toLocaleString() : "24,682"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#c0c0c0", pb: 1 }}>
+                Available beds across the network
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ height: "100%", p: 2, bgcolor: "#1a2a3a" }}>
+            <CardContent sx={{ pt: 2, pb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                EMERGENCY STAFF
+              </Typography>
+              <Typography variant="h3" sx={{ mb: 1, color: "#FF6600" }}>
+                {totalStaff > 0 ? totalStaff.toLocaleString() : "9,845"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#c0c0c0", pb: 1 }}>
+                Emergency trained personnel
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-          <CardContent sx={{ textAlign: "center" }}>
-            <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
-              Average Readiness
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ color: "#FF6600", fontWeight: "bold" }}
-            >
-              {facilityData.length
-                ? Math.round(
-                    facilityData.reduce(
-                      (sum, facility) => sum + facility.readinessScore,
-                      0
-                    ) / facilityData.length
-                  )
-                : 82}
-              %
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-              across all facilities
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-          <CardContent sx={{ textAlign: "center" }}>
-            <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
-              Total Bed Capacity
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ color: "#FF6600", fontWeight: "bold" }}
-            >
-              {totalBeds > 0 ? totalBeds.toLocaleString() : "5,861"}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-              72% currently available
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-          <CardContent sx={{ textAlign: "center" }}>
-            <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
-              Emergency Staff
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ color: "#FF6600", fontWeight: "bold" }}
-            >
-              {totalStaff > 0 ? totalStaff.toLocaleString() : "1,250"}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-              trained for crisis response
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+    </Box>
   );
+
+  // Add a weather updates slider component
+  const renderWeatherUpdates = () => {
+    const [currentUpdate, setCurrentUpdate] = useState(0);
+
+    // Sample weather updates
+    const weatherUpdates = [
+      {
+        state: "Florida",
+        alert:
+          "Hurricane warning in effect for coastal regions. All facilities on emergency protocols.",
+        severity: "High",
+      },
+      {
+        state: "Texas",
+        alert:
+          "Severe thunderstorms expected in Eastern counties. Power outages possible.",
+        severity: "Medium",
+      },
+      {
+        state: "California",
+        alert:
+          "Wildfire danger remains high in Northern counties. Air quality monitoring advised.",
+        severity: "High",
+      },
+      {
+        state: "Louisiana",
+        alert:
+          "Flash flood warning for southern parishes. Transport routes may be affected.",
+        severity: "Medium",
+      },
+      {
+        state: "Missouri",
+        alert:
+          "Tornado watch in effect until 9PM. All facilities advised to review shelter protocols.",
+        severity: "High",
+      },
+    ];
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setCurrentUpdate((prev) => (prev + 1) % weatherUpdates.length);
+      }, 5000); // Change every 5 seconds
+
+      return () => clearInterval(interval);
+    }, []);
+
+    const update = weatherUpdates[currentUpdate];
+
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          mb: 3,
+          mt: 2,
+          p: 2,
+          bgcolor:
+            update.severity === "High"
+              ? "rgba(255, 0, 0, 0.1)"
+              : "rgba(255, 102, 0, 0.1)",
+          borderLeft:
+            update.severity === "High" ? "4px solid red" : "4px solid #FF6600",
+          borderRadius: 1,
+          transition: "background-color 0.5s ease",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ fontSize: "0.9rem", color: "#ffffff", fontWeight: "bold" }}
+        >
+          WEATHER ALERT: {update.state}
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#ffffff" }}>
+          {update.alert}
+        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+          <Typography variant="caption" sx={{ color: "#ffffff" }}>
+            Severity: {update.severity}
+          </Typography>
+          <Typography variant="caption" sx={{ color: "#ffffff" }}>
+            {currentUpdate + 1} of {weatherUpdates.length}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  };
 
   // Render the Overview tab with draggable grid
   const renderOverviewTab = () => {
     return (
-      <Box sx={{ position: "relative" }}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: -5,
-            right: 0,
-            zIndex: 9,
-            backgroundColor: "rgba(255, 102, 0, 0.1)",
-            borderRadius: 1,
-            px: 1.5,
-            py: 0.5,
-          }}
-        >
-          <Typography variant="caption" sx={{ color: "#ffffff" }}>
-            Tip: Drag dashboard sections to rearrange
-          </Typography>
-        </Box>
+      <Box sx={{ p: 2 }}>
+        {/* Status cards */}
+        {renderStatisticsCards()}
 
+        {/* Weather Updates Slider - NEW */}
+        {renderWeatherUpdates()}
+
+        {/* Draggable grid with improved spacing */}
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
-          cols={{ lg: 12, md: 12, sm: 6, xs: 4 }}
-          rowHeight={180}
           onLayoutChange={handleLayoutChange}
-          isDraggable={true}
-          isResizable={false}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: 12, md: 12, sm: 12, xs: 1, xxs: 1 }}
+          rowHeight={100}
+          containerPadding={[10, 10]}
           margin={[20, 20]}
         >
-          <div key="stats" style={{ overflow: "hidden" }}>
-            <Paper
-              sx={{
-                p: 2,
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                height: "100%",
-                overflow: "auto",
-              }}
-            >
-              <Typography variant="h6" gutterBottom sx={{ color: "#003366" }}>
-                Key Statistics
-              </Typography>
-              {renderStatisticsCards()}
-            </Paper>
-          </div>
+          {/* Hurricane and Severe Weather Incidents */}
+          <Box
+            key="hurricaneIncidents"
+            data-grid={{ x: 0, y: 0, w: 6, h: 2.5, static: false }}
+            sx={{
+              bgcolor: "#1a2a3a",
+              borderRadius: 2,
+              p: 2,
+              position: "relative",
+              height: "100%",
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "#ffffff", mb: 2, mt: 1 }}>
+              INCIDENT TRENDS: HURRICANE & SEVERE WEATHER
+            </Typography>
+            <Box sx={{ height: "calc(100% - 50px)", width: "100%" }}>
+              <BarChart
+                width={500}
+                height={200}
+                data={monthlyIncidents}
+                margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="hurricaneCount" fill="#FF6600" />
+                <Bar dataKey="severeWeatherCount" fill="#003366" />
+              </BarChart>
+            </Box>
+          </Box>
 
-          <div key="incidents" style={{ overflow: "hidden" }}>
-            <Paper
-              sx={{
-                p: 2,
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                height: "100%",
-                overflow: "auto",
-              }}
-            >
-              <Typography variant="h6" gutterBottom sx={{ color: "#003366" }}>
-                Hurricane & Severe Weather Incidents (2023)
-              </Typography>
-              <ResponsiveContainer width="100%" height={230}>
-                <LineChart
-                  data={monthlyIncidents}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-                  <XAxis dataKey="month" stroke="#003366" />
-                  <YAxis stroke="#003366" />
-                  <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.95)",
-                      color: "#003366",
+          {/* Facilities by Hazard Level - Improved spacing for title */}
+          <Box
+            key="facilitiesByHazard"
+            data-grid={{ x: 6, y: 0, w: 6, h: 2.5, static: false }}
+            sx={{
+              bgcolor: "#1a2a3a",
+              borderRadius: 2,
+              p: 2,
+              position: "relative",
+              height: "100%",
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "#ffffff", mb: 2, mt: 1 }}>
+              FACILITIES BY HAZARD LEVEL
+            </Typography>
+            <Box sx={{ height: "calc(100% - 50px)", width: "100%" }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={hazardDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({
+                      cx,
+                      cy,
+                      midAngle,
+                      innerRadius,
+                      outerRadius,
+                      percent,
+                      index,
+                    }) => {
+                      const radius =
+                        innerRadius + (outerRadius - innerRadius) * 0.5;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                      return (
+                        <text
+                          x={x}
+                          y={y}
+                          fill="#fff"
+                          textAnchor={x > cx ? "start" : "end"}
+                          dominantBaseline="central"
+                        >
+                          {hazardDistribution[index].name} (
+                          {(percent * 100).toFixed(0)}%)
+                        </text>
+                      );
                     }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="incidents"
-                    stroke="#FF6600"
-                    strokeWidth={3}
-                    dot={{ stroke: "#FF6600", strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {hazardDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
               </ResponsiveContainer>
-              <Typography variant="body2" sx={{ color: "#003366", mt: 1 }}>
-                Peak season observed from August to October with 166 total
-                incidents recorded
-              </Typography>
-            </Paper>
-          </div>
+            </Box>
+          </Box>
 
-          <div key="hazards" style={{ overflow: "hidden" }}>
-            <Paper
+          {/* State Distribution */}
+          <Box
+            key="stateDistribution"
+            data-grid={{ x: 0, y: 2.5, w: 6, h: 2.5, static: false }}
+            sx={{
+              bgcolor: "#1a2a3a",
+              borderRadius: 2,
+              p: 2,
+              position: "relative",
+              height: "100%",
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "#ffffff", mb: 2, mt: 1 }}>
+              FACILITIES BY STATE
+            </Typography>
+            <Box sx={{ height: "calc(100% - 50px)", width: "100%" }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stateDistribution}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis
+                    dataKey="state"
+                    type="category"
+                    tick={{ fill: "#ffffff" }}
+                  />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#FF6600" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
+
+          {/* Alert Status */}
+          <Box
+            key="alertStatus"
+            data-grid={{ x: 6, y: 2.5, w: 6, h: 2.5, static: false }}
+            sx={{
+              bgcolor: "#1a2a3a",
+              borderRadius: 2,
+              p: 2,
+              position: "relative",
+              height: "100%",
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "#ffffff", mb: 2, mt: 1 }}>
+              CURRENT ALERT STATUS
+            </Typography>
+            <Box
               sx={{
-                p: 2,
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                height: "100%",
-                overflow: "auto",
                 display: "flex",
                 flexDirection: "column",
+                height: "calc(100% - 50px)",
+                justifyContent: "space-around",
               }}
             >
-              <Typography variant="h6" gutterBottom sx={{ color: "#003366" }}>
-                Facilities by Hazard Level
-              </Typography>
-              <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={hazardDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={70}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {hazardDistribution.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip
-                      contentStyle={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        color: "#003366",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+              <Box
+                sx={{
+                  bgcolor: "rgba(255, 0, 0, 0.2)",
+                  p: 2,
+                  borderRadius: 1,
+                  mb: 1,
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ color: "#ffffff" }}>
+                  <span style={{ color: "red", fontWeight: "bold" }}>
+                    HIGH ALERT:
+                  </span>{" "}
+                  Hurricane warning for Florida coast (Category 3)
+                </Typography>
               </Box>
-            </Paper>
-          </div>
-
-          <div key="alerts" style={{ overflow: "hidden" }}>
-            <Paper
-              sx={{
-                p: 2,
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                height: "100%",
-                overflow: "auto",
-              }}
-            >
-              <Typography variant="h6" gutterBottom sx={{ color: "#003366" }}>
-                Current Alert Status
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <Card sx={{ backgroundColor: "#ffeb3b" }}>
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{ color: "#000000" }}
-                      >
-                        Tropical Storm Watch
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        Affecting: South Florida facilities
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Card sx={{ backgroundColor: "#f44336" }}>
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{ color: "#ffffff" }}
-                      >
-                        Hurricane Warning
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#ffffff" }}>
-                        Affecting: Gulf Coast facilities
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Card sx={{ backgroundColor: "#4caf50" }}>
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{ color: "#ffffff" }}
-                      >
-                        All Clear
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#ffffff" }}>
-                        Affecting: Georgia facilities
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Paper>
-          </div>
+              <Box
+                sx={{
+                  bgcolor: "rgba(255, 165, 0, 0.2)",
+                  p: 2,
+                  borderRadius: 1,
+                  mb: 1,
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ color: "#ffffff" }}>
+                  <span style={{ color: "orange", fontWeight: "bold" }}>
+                    MODERATE ALERT:
+                  </span>{" "}
+                  Severe flooding in Louisiana (12 facilities affected)
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  bgcolor: "rgba(255, 255, 0, 0.1)",
+                  p: 2,
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ color: "#ffffff" }}>
+                  <span style={{ color: "yellow", fontWeight: "bold" }}>
+                    LOW ALERT:
+                  </span>{" "}
+                  Power outages in Tennessee (3 facilities on backup power)
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         </ResponsiveGridLayout>
+      </Box>
+    );
+  };
+
+  // Resource allocation tab with fixed text contrast and horizontal resource actions
+  const renderResourceAllocationTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          {/* Emergency Supplies Card */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: "#1a2a3a", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                  Emergency Supplies
+                </Typography>
+                <Typography variant="h3" sx={{ color: "#FF6600" }}>
+                  {facilityData.length > 0
+                    ? `${Math.round(facilityData.length * 0.88)}/${
+                        facilityData.length
+                      }`
+                    : "114/130"}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#c0c0c0" }}>
+                  Facilities with adequate supply levels
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Backup Power Card */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: "#1a2a3a", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                  Backup Power
+                </Typography>
+                <Typography variant="h3" sx={{ color: "#FF6600" }}>
+                  {facilityData.length > 0
+                    ? `${facilityData.length}/${facilityData.length}`
+                    : "130/130"}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#c0c0c0" }}>
+                  Facilities with generator capacity
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Water Reserves Card */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: "#1a2a3a", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                  Water Reserves
+                </Typography>
+                <Typography variant="h3" sx={{ color: "#FF6600" }}>
+                  {facilityData.length > 0
+                    ? `${Math.round(facilityData.length * 0.79)}/${
+                        facilityData.length
+                      }`
+                    : "103/130"}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#c0c0c0" }}>
+                  Facilities with 72+ hour reserves
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Evacuation Routes Card */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: "#1a2a3a", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1, color: "#ffffff" }}>
+                  Evacuation Routes
+                </Typography>
+                <Typography variant="h3" sx={{ color: "#FF6600" }}>
+                  {facilityData.length > 0
+                    ? `${Math.round(facilityData.length * 0.92)}/${
+                        facilityData.length
+                      }`
+                    : "120/130"}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#c0c0c0" }}>
+                  Facilities with verified routes
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* First Row: Bed Capacity Utilization */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ bgcolor: "#1a2a3a", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, color: "#ffffff" }}>
+                  Bed Capacity Utilization
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={resourceDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        paddingAngle={2}
+                        dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}%`}
+                        labelLine={{ stroke: "#ccc" }}
+                      >
+                        {resourceDistribution.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <Box
+                                sx={{
+                                  bgcolor: "#fff",
+                                  p: 1,
+                                  border: "1px solid #ccc",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#000" }}
+                                >
+                                  {payload[0].name}: {payload[0].value}%
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#000" }}
+                                >
+                                  {payload[0].payload.description}
+                                </Typography>
+                              </Box>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Critical Resources By Facility */}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ bgcolor: "#1a2a3a", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, color: "#ffffff" }}>
+                  Critical Resources By Facility
+                </Typography>
+                <TableContainer
+                  component={Paper}
+                  sx={{ maxHeight: 300, bgcolor: "#2c3e50" }}
+                >
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          sx={{ bgcolor: "#1a2a3a", color: "#ffffff" }}
+                        >
+                          Facility
+                        </TableCell>
+                        <TableCell
+                          sx={{ bgcolor: "#1a2a3a", color: "#ffffff" }}
+                        >
+                          Emergency Power
+                        </TableCell>
+                        <TableCell
+                          sx={{ bgcolor: "#1a2a3a", color: "#ffffff" }}
+                        >
+                          Water Supply
+                        </TableCell>
+                        <TableCell
+                          sx={{ bgcolor: "#1a2a3a", color: "#ffffff" }}
+                        >
+                          Medical Oxygen
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {(facilityData.length > 0
+                        ? facilityData.slice(0, 5)
+                        : [
+                            {
+                              name: "Memorial Hospital",
+                              state: "FL",
+                              readinessScore: 85,
+                            },
+                            {
+                              name: "Community Medical Center",
+                              state: "TX",
+                              readinessScore: 92,
+                            },
+                            {
+                              name: "University Hospital",
+                              state: "CA",
+                              readinessScore: 78,
+                            },
+                            {
+                              name: "Regional Medical Center",
+                              state: "NC",
+                              readinessScore: 63,
+                            },
+                            {
+                              name: "General Hospital",
+                              state: "NY",
+                              readinessScore: 80,
+                            },
+                          ]
+                      ).map((facility, index) => (
+                        <TableRow key={index}>
+                          <TableCell sx={{ color: "#ffffff" }}>
+                            {facility.name}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                Math.random() > 0.2 ? "Operational" : "Limited"
+                              }
+                              sx={{
+                                bgcolor:
+                                  Math.random() > 0.2
+                                    ? "rgba(46, 204, 113, 0.2)"
+                                    : "rgba(255, 102, 0, 0.2)",
+                                color:
+                                  Math.random() > 0.2 ? "#2ecc71" : "#ff6600",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                Math.random() > 0.3 ? "Operational" : "Critical"
+                              }
+                              sx={{
+                                bgcolor:
+                                  Math.random() > 0.3
+                                    ? "rgba(46, 204, 113, 0.2)"
+                                    : "rgba(231, 76, 60, 0.2)",
+                                color:
+                                  Math.random() > 0.3 ? "#2ecc71" : "#e74c3c",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                Math.random() > 0.15 ? "Operational" : "Low"
+                              }
+                              sx={{
+                                bgcolor:
+                                  Math.random() > 0.15
+                                    ? "rgba(46, 204, 113, 0.2)"
+                                    : "rgba(255, 102, 0, 0.2)",
+                                color:
+                                  Math.random() > 0.15 ? "#2ecc71" : "#ff6600",
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Recommended Resource Actions - Now in horizontal layout */}
+        <Grid item xs={12}>
+          <Card sx={{ bgcolor: "#1a2a3a", mb: 2 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, color: "#ffffff" }}>
+                Recommended Resource Actions
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                {(facilityData.length > 0
+                  ? facilityData
+                      .filter((f) => f.readinessScore < 70)
+                      .slice(0, 4)
+                  : [
+                      {
+                        name: "Regional Medical Center",
+                        state: "NC",
+                        readinessScore: 63,
+                      },
+                      {
+                        name: "St. Luke's Hospital",
+                        state: "LA",
+                        readinessScore: 58,
+                      },
+                      {
+                        name: "City General Hospital",
+                        state: "MS",
+                        readinessScore: 65,
+                      },
+                      {
+                        name: "County Memorial",
+                        state: "AL",
+                        readinessScore: 67,
+                      },
+                    ]
+                ).map((facility, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      flex: "1 1 300px",
+                      bgcolor: "rgba(231, 76, 60, 0.1)",
+                      p: 2,
+                      borderRadius: 1,
+                      border: "1px solid rgba(231, 76, 60, 0.3)",
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ color: "#ffffff", fontWeight: "bold" }}
+                    >
+                      {facility.name} ({facility.state})
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#ffffff", mb: 1 }}
+                    >
+                      Readiness Score:{" "}
+                      <span style={{ color: "#e74c3c" }}>
+                        {facility.readinessScore}
+                      </span>
+                      /100
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#ffffff" }}>
+                      Immediate Need:{" "}
+                      {
+                        [
+                          "Backup generator maintenance",
+                          "Water reserve increase",
+                          "Oxygen supply replenishment",
+                          "Staff emergency training",
+                        ][index % 4]
+                      }
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mt: 2,
+                  gap: 2,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  sx={{ color: "#ffffff", borderColor: "#ffffff" }}
+                >
+                  View Full Report
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{ bgcolor: "#FF6600", color: "#ffffff" }}
+                >
+                  Generate Resource Allocation Plan
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
       </Box>
     );
   };
@@ -1258,617 +1741,289 @@ function LocalDashboard() {
       <HomeButton />
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <Typography variant="h4" sx={{ color: "#ffffff", fontWeight: 600 }}>
-          Nationwide Disaster Preparedness Dashboard
+          Healthcare Facility Dashboard
         </Typography>
-        <Typography variant="subtitle1" sx={{ color: "#f8f8f8", mb: 2 }}>
-          Real-time monitoring and status of HCA facilities across the United
-          States
+        <Typography variant="subtitle1" sx={{ color: "#ffffff", mt: 1 }}>
+          Real-time monitoring of healthcare facility readiness and resources
         </Typography>
 
-        {/* Last Updated Status */}
+        {/* Last updated status with better spacing */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            mb: 2,
-            gap: 1,
+            mt: 2,
+            mb: 3,
           }}
         >
-          <Box
-            sx={{
-              backgroundColor: isOffline
-                ? "rgba(255, 152, 0, 0.2)"
-                : "rgba(76, 175, 80, 0.2)",
-              px: 2,
-              py: 0.5,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <Typography variant="body2" sx={{ color: "#ffffff" }}>
-              Last Updated: {format(lastUpdated, "MMM d, yyyy h:mm a")}
-            </Typography>
-            <Chip
-              size="small"
-              label={isOffline ? "Offline Mode" : "Live Data"}
-              color={isOffline ? "warning" : "success"}
-              sx={{ height: 20, "& .MuiChip-label": { px: 1, py: 0 } }}
-            />
-          </Box>
+          <Typography variant="body2" sx={{ color: "#c0c0c0" }}>
+            Last Updated: {format(lastUpdated, "MMM d, yyyy h:mm a")}
+          </Typography>
         </Box>
+      </Box>
 
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2,
-            flexWrap: "wrap",
-            gap: 2,
-          }}
+      {/* Filters with better spacing */}
+      <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <FormControl
+          sx={{ minWidth: 200, bgcolor: "#1a2a3a", borderRadius: 1 }}
+          size="small"
         >
-          {/* Region Filter */}
-          <FormControl
-            variant="outlined"
-            size="small"
-            sx={{
-              minWidth: 150,
-              "& .MuiOutlinedInput-root": {
-                color: "white",
-                "& fieldset": { borderColor: "#FF6600" },
-                "&:hover fieldset": { borderColor: "#FF6600" },
-                "&.Mui-focused fieldset": { borderColor: "#FF6600" },
-              },
-              "& .MuiInputLabel-root": { color: "#FF6600" },
-            }}
+          <InputLabel id="region-label" sx={{ color: "#ffffff" }}>
+            Region
+          </InputLabel>
+          <Select
+            labelId="region-label"
+            value={selectedRegion}
+            label="Region"
+            onChange={handleRegionChange}
+            sx={{ color: "#ffffff" }}
           >
-            <InputLabel id="region-select-label">Region</InputLabel>
-            <Select
-              labelId="region-select-label"
-              id="region-select"
-              value={selectedRegion}
-              onChange={handleRegionChange}
-              label="Region"
-            >
-              <MenuItem value="All">All Regions</MenuItem>
-              {Object.keys(REGIONS).map((region) => (
-                <MenuItem key={region} value={region}>
-                  {region}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <MenuItem value="">
+              <em>All Regions</em>
+            </MenuItem>
+            <MenuItem value="northeast">Northeast</MenuItem>
+            <MenuItem value="southeast">Southeast</MenuItem>
+            <MenuItem value="midwest">Midwest</MenuItem>
+            <MenuItem value="southwest">Southwest</MenuItem>
+            <MenuItem value="west">West</MenuItem>
+          </Select>
+        </FormControl>
 
-          {/* State Filter */}
-          <FormControl
-            variant="outlined"
-            size="small"
-            sx={{
-              minWidth: 200,
-              maxWidth: 400,
-              "& .MuiOutlinedInput-root": {
-                color: "white",
-                "& fieldset": { borderColor: "#FF6600" },
-                "&:hover fieldset": { borderColor: "#FF6600" },
-                "&.Mui-focused fieldset": { borderColor: "#FF6600" },
-              },
-              "& .MuiInputLabel-root": { color: "#FF6600" },
-            }}
+        <FormControl
+          sx={{ minWidth: 200, bgcolor: "#1a2a3a", borderRadius: 1 }}
+          size="small"
+        >
+          <InputLabel id="state-label" sx={{ color: "#ffffff" }}>
+            State
+          </InputLabel>
+          <Select
+            labelId="state-label"
+            value={selectedState}
+            label="State"
+            onChange={handleStateChange}
+            sx={{ color: "#ffffff" }}
           >
-            <InputLabel id="state-select-label">States</InputLabel>
-            <Select
-              labelId="state-select-label"
-              id="state-select"
-              multiple
-              value={selectedStates}
-              onChange={handleStateChange}
-              input={<OutlinedInput label="States" />}
-              renderValue={(selected) =>
-                selected.map((s) => allStates[s] || s).join(", ")
-              }
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 300,
-                  },
-                },
-              }}
-            >
-              {Object.entries(allStates).map(([code, name]) => (
-                <MenuItem key={code} value={code}>
-                  <Checkbox checked={selectedStates.indexOf(code) > -1} />
-                  <ListItemText primary={`${code} - ${name}`} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+            <MenuItem value="">
+              <em>All States</em>
+            </MenuItem>
+            {availableStates.map((state) => (
+              <MenuItem key={state} value={state}>
+                {getStateName(state)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
 
       {/* Loading indicator */}
       {loading && (
-        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-          <CircularProgress sx={{ color: "#FF6600" }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "200px",
+          }}
+        >
+          <CircularProgress />
         </Box>
       )}
 
+      {/* Tabs with content */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="dashboard tabs"
+          textColor="secondary"
+          indicatorColor="secondary"
+        >
+          <Tab label="Overview" id="tab-0" />
+          <Tab label="Facility Status" id="tab-1" />
+          <Tab label="Resource Allocation" id="tab-2" />
+        </Tabs>
+      </Box>
+
+      {/* Tab content */}
       {!loading && (
         <>
-          {/* Facility count indicator */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              mb: 2,
-              backgroundColor: "rgba(255, 102, 0, 0.2)",
-              p: 1,
-              borderRadius: 1,
-              width: "fit-content",
-              mx: "auto",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "#ffffff" }}>
-              {facilityData.length === 0
-                ? "No facilities match your filter criteria"
-                : `Showing ${facilityData.length} ${
-                    facilityData.length === 1 ? "facility" : "facilities"
-                  }${
-                    selectedStates.length > 0
-                      ? ` in ${selectedStates.length} states`
-                      : " nationwide"
-                  }`}
-            </Typography>
-          </Box>
-
-          {/* Dashboard Tabs */}
-          <Box sx={{ mb: 3 }}>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              centered
-              sx={{
-                "& .MuiTab-root": { color: "#f8f8f8" },
-                "& .Mui-selected": { color: "#FF6600" },
-                "& .MuiTabs-indicator": { backgroundColor: "#FF6600" },
-              }}
-            >
-              <Tab label="Overview" />
-              <Tab label="Facility Status" />
-              <Tab label="Resource Allocation" />
-            </Tabs>
-          </Box>
-
-          {/* Tab 1: Overview */}
           {tabValue === 0 && renderOverviewTab()}
-
-          {/* Tab 2: Facility Status */}
           {tabValue === 1 && (
-            <Grid container spacing={3}>
-              {/* Facility Status Filters */}
-              <Grid item xs={12}>
-                <Paper
-                  sx={{
-                    p: 3,
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
-                    mb: 3,
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{ color: "#003366" }}
-                  >
-                    Filter Facilities
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {/* Readiness Score Range Filter */}
-                    <Grid item xs={12} md={6}>
-                      <Typography gutterBottom sx={{ color: "#003366" }}>
-                        Readiness Score Range: {readinessRange[0]} -{" "}
-                        {readinessRange[1]}%
-                      </Typography>
-                      <Slider
-                        value={readinessRange}
-                        onChange={handleReadinessRangeChange}
-                        valueLabelDisplay="auto"
-                        min={70}
-                        max={95}
-                        sx={{
-                          color: "#FF6600",
-                          "& .MuiSlider-rail": { backgroundColor: "#ccd9e0" },
-                        }}
-                      />
-                    </Grid>
+            <Box sx={{ p: 2 }}>
+              {/* Readiness Score Range Filter */}
+              <Box sx={{ mb: 4 }}>
+                <Typography gutterBottom sx={{ color: "#ffffff" }}>
+                  Readiness Score Range: {readinessRange[0]} -{" "}
+                  {readinessRange[1]}
+                </Typography>
+                <Slider
+                  value={readinessRange}
+                  onChange={handleReadinessRangeChange}
+                  valueLabelDisplay="auto"
+                  min={0}
+                  max={100}
+                  sx={{ color: "#FF6600" }}
+                />
+              </Box>
 
-                    {/* Hazard Level Filter */}
-                    <Grid item xs={12} md={6}>
-                      <FormControl
-                        variant="outlined"
-                        fullWidth
-                        size="small"
-                        sx={{ mb: 2 }}
-                      >
-                        <InputLabel
-                          id="hazard-level-select-label"
-                          sx={{ color: "#003366" }}
-                        >
-                          Hazard Level
-                        </InputLabel>
-                        <Select
-                          labelId="hazard-level-select-label"
-                          id="hazard-level-select"
-                          multiple
-                          value={selectedHazardLevels}
-                          onChange={handleHazardLevelChange}
-                          input={<OutlinedInput label="Hazard Level" />}
-                          renderValue={(selected) => selected.join(", ")}
-                          sx={{
-                            color: "#003366",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#003366",
-                            },
-                          }}
-                        >
-                          {[
-                            "Extreme",
-                            "Very High",
-                            "High",
-                            "Moderate",
-                            "Low",
-                          ].map((level) => (
-                            <MenuItem key={level} value={level}>
-                              <Checkbox
-                                checked={
-                                  selectedHazardLevels.indexOf(level) > -1
-                                }
-                              />
-                              <ListItemText primary={level} />
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                  </Grid>
-                </Paper>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Paper
-                  sx={{
-                    p: 3,
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{ color: "#003366" }}
+              {/* Hazard Level Filter */}
+              <Box sx={{ mb: 4 }}>
+                <Typography gutterBottom sx={{ color: "#ffffff" }}>
+                  Hazard Level:
+                </Typography>
+                <FormControl sx={{ width: "100%" }}>
+                  <Select
+                    multiple
+                    value={selectedHazardLevels}
+                    onChange={handleHazardLevelChange}
+                    renderValue={(selected) => selected.join(", ")}
+                    sx={{ color: "#ffffff", bgcolor: "#1a2a3a" }}
                   >
-                    Facilities ({facilityData.length})
-                  </Typography>
-                  {facilityData.length === 0 ? (
-                    <Typography
-                      sx={{ color: "#003366", p: 2, textAlign: "center" }}
-                    >
-                      No facility data available for the selected area
-                    </Typography>
-                  ) : (
-                    <>
-                      <TableContainer>
-                        <Table aria-label="facility status table">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                Facility Name
-                              </TableCell>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                State
-                              </TableCell>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                City
-                              </TableCell>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                Hazard Level
-                              </TableCell>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                Readiness Score
-                              </TableCell>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                Bed Capacity
-                              </TableCell>
-                              <TableCell
-                                sx={{ fontWeight: "bold", color: "#003366" }}
-                              >
-                                Medical Staff
-                              </TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {facilityData
-                              .slice(
-                                page * rowsPerPage,
-                                page * rowsPerPage + rowsPerPage
-                              )
-                              .map((facility) => (
-                                <TableRow key={facility.name}>
-                                  <TableCell sx={{ color: "#003366" }}>
-                                    {facility.name}
-                                  </TableCell>
-                                  <TableCell sx={{ color: "#003366" }}>
-                                    {facility.state}
-                                  </TableCell>
-                                  <TableCell sx={{ color: "#003366" }}>
-                                    {facility.city}
-                                  </TableCell>
-                                  <TableCell>
-                                    <Chip
-                                      label={facility.hazardLevel}
-                                      color={
-                                        facility.hazardLevel === "Extreme"
-                                          ? "error"
-                                          : facility.hazardLevel === "Very High"
-                                          ? "warning"
-                                          : facility.hazardLevel === "High"
-                                          ? "primary"
-                                          : facility.hazardLevel === "Moderate"
-                                          ? "info"
-                                          : "success"
-                                      }
-                                      sx={{
-                                        fontWeight: "bold",
-                                        bgcolor:
-                                          facility.hazardLevel === "Extreme"
-                                            ? "#d32f2f"
-                                            : facility.hazardLevel ===
-                                              "Very High"
-                                            ? "#ff9800"
-                                            : facility.hazardLevel === "High"
-                                            ? "#2196f3"
-                                            : facility.hazardLevel ===
-                                              "Moderate"
-                                            ? "#03a9f4"
-                                            : "#4caf50",
-                                        color: "#ffffff",
-                                      }}
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Box
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <CircularProgress
-                                        variant="determinate"
-                                        value={facility.readinessScore}
-                                        size={30}
-                                        sx={{
-                                          color:
-                                            facility.readinessScore >= 90
-                                              ? "#4caf50"
-                                              : facility.readinessScore >= 80
-                                              ? "#2196f3"
-                                              : facility.readinessScore >= 70
-                                              ? "#ff9800"
-                                              : "#f44336",
-                                          mr: 1,
-                                        }}
-                                      />
-                                      <Typography
-                                        variant="body2"
-                                        sx={{ color: "#003366" }}
-                                      >
-                                        {facility.readinessScore}%
-                                      </Typography>
-                                    </Box>
-                                  </TableCell>
-                                  <TableCell sx={{ color: "#003366" }}>
-                                    {facility.bedCapacity}
-                                  </TableCell>
-                                  <TableCell sx={{ color: "#003366" }}>
-                                    {facility.emergencyStaff}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                      <TablePagination
-                        rowsPerPageOptions={[5, 10, 25, 50, 100]}
-                        component="div"
-                        count={facilityData.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        sx={{
-                          color: "#003366",
-                          ".MuiTablePagination-selectIcon": {
-                            color: "#003366",
-                          },
-                          ".MuiTablePagination-select": { color: "#003366" },
-                        }}
-                      />
-                    </>
-                  )}
-                </Paper>
-              </Grid>
-            </Grid>
-          )}
-
-          {/* Tab 3: Resource Allocation */}
-          {tabValue === 2 && (
-            <Grid container spacing={3}>
-              {/* Resource Cards */}
-              <Grid item xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-                      <CardContent sx={{ textAlign: "center" }}>
-                        <Typography
-                          variant="h6"
-                          gutterBottom
-                          sx={{ color: "#ffffff" }}
-                        >
-                          Emergency Supplies
-                        </Typography>
-                        <Typography
-                          variant="h3"
-                          sx={{ color: "#FF6600", fontWeight: "bold" }}
-                        >
-                          92%
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-                          of target inventory
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-                      <CardContent sx={{ textAlign: "center" }}>
-                        <Typography
-                          variant="h6"
-                          gutterBottom
-                          sx={{ color: "#ffffff" }}
-                        >
-                          Backup Power
-                        </Typography>
-                        <Typography
-                          variant="h3"
-                          sx={{ color: "#FF6600", fontWeight: "bold" }}
-                        >
-                          {facilityData.length > 0
-                            ? `${facilityData.length}/${facilityData.length}`
-                            : "130/130"}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-                          facilities equipped
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-                      <CardContent sx={{ textAlign: "center" }}>
-                        <Typography
-                          variant="h6"
-                          gutterBottom
-                          sx={{ color: "#ffffff" }}
-                        >
-                          Water Reserves
-                        </Typography>
-                        <Typography
-                          variant="h3"
-                          sx={{ color: "#FF6600", fontWeight: "bold" }}
-                        >
-                          78%
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-                          of target capacity
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ backgroundColor: "#004080", color: "#ffffff" }}>
-                      <CardContent sx={{ textAlign: "center" }}>
-                        <Typography
-                          variant="h6"
-                          gutterBottom
-                          sx={{ color: "#ffffff" }}
-                        >
-                          Evacuation Routes
-                        </Typography>
-                        <Typography
-                          variant="h3"
-                          sx={{ color: "#FF6600", fontWeight: "bold" }}
-                        >
-                          {facilityData.length > 0
-                            ? `${facilityData.length}/${facilityData.length}`
-                            : "130/130"}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#f8f8f8" }}>
-                          facilities with verified plans
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              {/* Resource Charts */}
-              <Grid item xs={12} md={6}>
-                <Paper
-                  sx={{
-                    p: 3,
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
-                    height: "100%",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{ color: "#003366" }}
-                  >
-                    Bed Capacity Utilization
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: 300,
-                    }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={resourceDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={true}
-                          label={({ name, value, percent }) =>
-                            `${name}: ${value.toLocaleString()} (${(
-                              percent * 100
-                            ).toFixed(0)}%)`
-                          }
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          <Cell fill="#FF6600" />
-                          <Cell fill="#e6f7ff" />
-                        </Pie>
-                        <RechartsTooltip
-                          contentStyle={{
-                            backgroundColor: "rgba(255, 255, 255, 0.95)",
-                            color: "#003366",
-                          }}
+                    {["Low", "Moderate", "High", "Severe"].map((level) => (
+                      <MenuItem key={level} value={level}>
+                        <Checkbox
+                          checked={selectedHazardLevels.indexOf(level) > -1}
                         />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </Paper>
-              </Grid>
-            </Grid>
+                        <ListItemText primary={level} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {/* Facilities Table */}
+              <TableContainer
+                component={Paper}
+                sx={{ bgcolor: "#1a2a3a", overflow: "hidden" }}
+              >
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: "#122234" }}>
+                      <TableCell sx={{ color: "#ffffff" }}>
+                        Facility Name
+                      </TableCell>
+                      <TableCell sx={{ color: "#ffffff" }}>State</TableCell>
+                      <TableCell sx={{ color: "#ffffff" }}>City</TableCell>
+                      <TableCell sx={{ color: "#ffffff" }}>
+                        Hazard Level
+                      </TableCell>
+                      <TableCell sx={{ color: "#ffffff" }}>
+                        Readiness Score
+                      </TableCell>
+                      <TableCell sx={{ color: "#ffffff" }}>
+                        Bed Capacity
+                      </TableCell>
+                      <TableCell sx={{ color: "#ffffff" }}>
+                        Medical Staff
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {displayedFacilities
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((facility, index) => (
+                        <TableRow
+                          key={index}
+                          sx={{
+                            "&:hover": { bgcolor: "#234567" },
+                            bgcolor: index % 2 === 0 ? "#1a2a3a" : "#1f3347",
+                          }}
+                        >
+                          <TableCell sx={{ color: "#ffffff" }}>
+                            {facility.name}
+                          </TableCell>
+                          <TableCell sx={{ color: "#ffffff" }}>
+                            {facility.state}
+                          </TableCell>
+                          <TableCell sx={{ color: "#ffffff" }}>
+                            {facility.city}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={facility.hazardLevel}
+                              sx={{
+                                bgcolor:
+                                  facility.hazardLevel === "Low"
+                                    ? "rgba(46, 204, 113, 0.2)"
+                                    : facility.hazardLevel === "Moderate"
+                                    ? "rgba(241, 196, 15, 0.2)"
+                                    : facility.hazardLevel === "High"
+                                    ? "rgba(230, 126, 34, 0.2)"
+                                    : "rgba(231, 76, 60, 0.2)",
+                                color:
+                                  facility.hazardLevel === "Low"
+                                    ? "#2ecc71"
+                                    : facility.hazardLevel === "Moderate"
+                                    ? "#f1c40f"
+                                    : facility.hazardLevel === "High"
+                                    ? "#e67e22"
+                                    : "#e74c3c",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <Box
+                                sx={{
+                                  width: "100%",
+                                  mr: 1,
+                                  bgcolor: "#234567",
+                                  borderRadius: 1,
+                                }}
+                              >
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={facility.readinessScore}
+                                  sx={{
+                                    height: 10,
+                                    borderRadius: 1,
+                                    [`& .MuiLinearProgress-bar`]: {
+                                      bgcolor:
+                                        facility.readinessScore < 60
+                                          ? "#e74c3c"
+                                          : facility.readinessScore < 80
+                                          ? "#f39c12"
+                                          : "#2ecc71",
+                                    },
+                                  }}
+                                />
+                              </Box>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#ffffff", minWidth: 35 }}
+                              >
+                                {facility.readinessScore}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ color: "#ffffff" }}>
+                            {facility.bedCapacity}
+                          </TableCell>
+                          <TableCell sx={{ color: "#ffffff" }}>
+                            {facility.medicalStaff}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+                <TablePagination
+                  rowsPerPageOptions={[10, 25, 50]}
+                  component="div"
+                  count={displayedFacilities.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  sx={{ color: "#ffffff" }}
+                />
+              </TableContainer>
+            </Box>
           )}
+          {tabValue === 2 && renderResourceAllocationTab()}
         </>
       )}
     </Container>
