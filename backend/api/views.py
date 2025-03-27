@@ -22,6 +22,29 @@ def haversine(lat1, lon1, lat2, lon2):
 
 @api_view(['GET'])
 def get_data(request):
+    nationwide = request.query_params.get('nationwide')
+    states = request.query_params.getlist('states')
+    
+    # For nationwide query mode
+    if nationwide:
+        # Get all persons, potentially filtered by state(s)
+        if states:
+            persons = Person.objects.filter(state__in=states)
+        else:
+            persons = Person.objects.all()
+            
+        # Separate into "local" (first 100) and "nearby" (rest) for compatibility with frontend
+        # This separation is arbitrary since we're showing all data
+        serializer = PersonSerializer(persons, many=True)
+        all_data = serializer.data
+        
+        # Arbitrary split to maintain API structure expected by frontend
+        return Response({
+            "local": all_data[:100],  # First 100 for convenience
+            "nearby": all_data[100:]  # The rest
+        })
+    
+    # Original location-based query mode with zip code and radius
     zip_code = request.query_params.get('zip_code')
     try:
         radius = float(request.query_params.get('radius', 50))
