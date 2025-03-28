@@ -26,6 +26,7 @@ import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 import EmailIcon from "@mui/icons-material/Email";
+import InfoIcon from "@mui/icons-material/Info";
 import { useNavigate, useLocation } from "react-router-dom";
 import EmailModal from "./EmailModal";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -76,6 +77,7 @@ function DataDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const zipCode = location.state?.zipCode || "";
+  const selectedFacility = location.state?.selectedFacility || null;
 
   const [localData, setLocalData] = useState([]);
   const [nearbyData, setNearbyData] = useState([]);
@@ -120,8 +122,29 @@ function DataDashboard() {
         .then((res) => res.json())
         .then((data) => {
           console.log("API response:", data);
-          setLocalData(data.local);
-          setNearbyData(data.nearby);
+
+          // If a specific facility was selected, prioritize showing it
+          if (selectedFacility) {
+            // Filter local data to prioritize the selected facility
+            const filteredLocalData = data.local.filter(
+              (person) => person.location === selectedFacility.name
+            );
+
+            // If we have data for the selected facility, use just that
+            if (filteredLocalData.length > 0) {
+              setLocalData(filteredLocalData);
+              setNearbyData(data.nearby);
+            } else {
+              // Otherwise use all data
+              setLocalData(data.local);
+              setNearbyData(data.nearby);
+            }
+          } else {
+            // No specific facility selected, use all data
+            setLocalData(data.local);
+            setNearbyData(data.nearby);
+          }
+
           setLoading(false);
         })
         .catch((err) => {
@@ -129,7 +152,7 @@ function DataDashboard() {
           setLoading(false);
         });
     }
-  }, [zipCode, debouncedRadius]);
+  }, [zipCode, debouncedRadius, selectedFacility]);
 
   // When localData updates, set the map center using the first local record
   useEffect(() => {
@@ -166,30 +189,81 @@ function DataDashboard() {
   };
 
   // For the "Contact" buttons, prepare email data and open modal
-  const openEmailModal = (recipientsCount, subjectType) => {
+  const openEmailModal = (
+    recipientsCount,
+    subjectType,
+    specificFacility = null
+  ) => {
+    // Determine which type of email subject to use
     const subject =
       subjectType === "A"
         ? "Mandated Evacuation Protocol and Instructions"
         : "Emergency Assistance Requested";
 
-    setEmailData({
-      recipients: recipientsCount,
-      subject,
-      currentFacility:
+    // Determine which data array and facility to use
+    let peopleData;
+    let facilityToUse;
+
+    if (specificFacility) {
+      // If specific facility is provided, use its people data
+      peopleData = specificFacility.people || [];
+      facilityToUse = {
+        name: specificFacility.name,
+        city: specificFacility.city,
+        state: specificFacility.state,
+      };
+    } else {
+      // Otherwise use all people from the appropriate tab
+      peopleData = subjectType === "A" ? localData : nearbyData;
+      facilityToUse =
         localData.length > 0
           ? {
               name: localData[0].location,
               city: localData[0].city,
               state: localData[0].state,
             }
-          : null,
+          : null;
+    }
+
+    setEmailData({
+      recipients: recipientsCount,
+      subject,
+      currentFacility: facilityToUse,
+      totalPeopleCount: peopleData.length,
+      isSingleFacility: !!specificFacility,
     });
+
     setEmailModalOpen(true);
+  };
+
+  const handleContactFacility = (facility) => {
+    // Open email modal for a specific facility
+    openEmailModal(
+      facility.people.length,
+      facility.name.includes("Hospital") ? "A" : "B",
+      facility
+    );
   };
 
   const closeEmailModal = () => {
     setEmailModalOpen(false);
     setEmailData(null);
+  };
+
+  // Calculate number of unique facilities in data array
+  const countUniqueFacilities = (data) => {
+    // Use a Set to track unique facility names
+    const uniqueFacilities = new Set();
+
+    // Loop through all people and add their facility names to the Set
+    data.forEach((person) => {
+      if (person.location) {
+        uniqueFacilities.add(person.location);
+      }
+    });
+
+    // Return the size of the Set (number of unique facilities)
+    return uniqueFacilities.size;
   };
 
   return (
@@ -233,7 +307,17 @@ function DataDashboard() {
               }}
             >
               <LocationOnIcon sx={{ fontSize: 18, mr: 0.5 }} />
-              Showing results for zipcode: {zipCode}
+              {selectedFacility ? (
+                <>
+                  Showing information for{" "}
+                  <strong style={{ marginLeft: "4px", marginRight: "4px" }}>
+                    {selectedFacility.name}
+                  </strong>{" "}
+                  in zipcode {zipCode}
+                </>
+              ) : (
+                <>Showing results for zipcode: {zipCode}</>
+              )}
             </Typography>
           </Box>
         </Box>
@@ -321,7 +405,10 @@ function DataDashboard() {
 
           {/* Affected Facility Tab Panel */}
           <TabPanel value={tabValue} index={0}>
-            <PeopleList people={localData} />
+            <PeopleList
+              people={localData}
+              onContactFacility={handleContactFacility}
+            />
             <Box sx={{ mt: 3, textAlign: "right" }}>
               <Button
                 variant="contained"
@@ -356,7 +443,7 @@ function DataDashboard() {
               }}
             >
               <Typography sx={{ color: "#ffffff", fontWeight: 500, mb: 1 }}>
-                Select Nearby Radius (miles): {radius}
+                Filter facilities within radius (miles): {radius}
               </Typography>
               <Slider
                 value={radius}
@@ -376,9 +463,26 @@ function DataDashboard() {
                   },
                 }}
               />
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#b0bbd4",
+                  mt: 1,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <InfoIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                Showing {countUniqueFacilities(nearbyData)} unique facilities (
+                {nearbyData.length} total employees) within {radius} miles of
+                zipcode {zipCode}
+              </Typography>
             </Box>
 
-            <PeopleList people={nearbyData} />
+            <PeopleList
+              people={nearbyData}
+              onContactFacility={handleContactFacility}
+            />
 
             <Box sx={{ mt: 3, textAlign: "right" }}>
               <Button
@@ -434,6 +538,8 @@ function DataDashboard() {
           open={emailModalOpen}
           onClose={closeEmailModal}
           currentFacility={emailData?.currentFacility}
+          totalPeopleCount={emailData?.totalPeopleCount || 0}
+          isSingleFacility={emailData?.isSingleFacility || false}
         />
       )}
     </Box>

@@ -5,6 +5,7 @@ import DataDashboard from "./components/DataDashboard";
 import LandingChoice from "./components/LandingChoice";
 import PrepareDashboard from "./components/PrepareDashboard";
 import LocalDashboard from "./components/LocalDashboard";
+import BIDashboard from "./components/BIDashboard";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/zipcode-entry" element={<ZipCodeEntry />} />
         <Route path="/prepare" element={<PrepareDashboard />} />
         <Route path="/local-dashboard" element={<LocalDashboard />} />
+        <Route path="/bidashboard" element={<BIDashboard />} />
       </Routes>
     </Router>
   );
